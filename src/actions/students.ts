@@ -96,11 +96,26 @@ export async function toggleStudentStatusAction(studentId: string, currentStatus
     return { success: false, error: "Non autorisé" };
   }
 
+  const adminClient = createAdminClient();
   const supabase = await createClient();
+  const newStatus = !currentStatus;
 
+  // 1. Update Supabase Auth user ban status if service role is available
+  if (adminClient) {
+    try {
+      await adminClient.auth.admin.updateUserById(studentId, {
+        ban_duration: newStatus ? "none" : "876000h",
+        app_metadata: { is_active: newStatus },
+      });
+    } catch (authErr) {
+      console.warn("auth.admin.updateUserById ban warning:", authErr);
+    }
+  }
+
+  // 2. Update profiles table
   const { error } = await supabase
     .from("profiles")
-    .update({ is_active: !currentStatus })
+    .update({ is_active: newStatus, updated_at: new Date().toISOString() })
     .eq("id", studentId);
 
   if (error) {
@@ -136,6 +151,8 @@ export async function updateStudentAction(data: {
       const authUpdates: {
         email?: string;
         password?: string;
+        ban_duration?: string;
+        app_metadata?: Record<string, any>;
         user_metadata?: Record<string, any>;
       } = {
         email: data.email,
@@ -144,6 +161,11 @@ export async function updateStudentAction(data: {
           preferred_language: data.preferred_language || "fr",
         },
       };
+
+      if (typeof data.is_active === "boolean") {
+        authUpdates.ban_duration = data.is_active ? "none" : "876000h";
+        authUpdates.app_metadata = { is_active: data.is_active };
+      }
 
       if (data.password && data.password.trim().length > 0) {
         authUpdates.password = data.password.trim();

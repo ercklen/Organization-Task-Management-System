@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "@/i18n/routing";
 import { createClient } from "@/lib/supabase/client";
@@ -24,6 +24,16 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("deactivated") === "true") {
+        setErrorMessage(t("accountDeactivatedSession"));
+        toast.error(t("accountDeactivatedSession"));
+      }
+    }
+  }, [t]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) return;
@@ -42,6 +52,23 @@ export default function LoginPage() {
         toast.error(t("errorInvalidCredentials"));
         setIsLoading(false);
         return;
+      }
+
+      // Check whether user account is active in profiles
+      if (data?.user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("is_active")
+          .eq("id", data.user.id)
+          .single();
+
+        if (profile && !profile.is_active) {
+          await supabase.auth.signOut();
+          setErrorMessage(t("errorAccountDeactivated"));
+          toast.error(t("errorAccountDeactivated"));
+          setIsLoading(false);
+          return;
+        }
       }
 
       toast.success(tCommon("success"));

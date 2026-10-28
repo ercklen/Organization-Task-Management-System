@@ -4,12 +4,16 @@ import { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter, usePathname } from "@/i18n/routing";
 import { Profile, OrganizationSettings } from "@/types";
-import { updateProfileSettingsAction, updateOrgSettingsAction } from "@/actions/settings";
+import {
+  updateProfileSettingsAction,
+  updateOrgSettingsAction,
+  changePasswordAction,
+} from "@/actions/settings";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Settings, User, Building, Globe, Save } from "lucide-react";
+import { Settings, User, Building, Globe, Save, Lock, KeyRound, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 
 interface SettingsViewProps {
@@ -28,6 +32,15 @@ export function SettingsView({ profile, orgSettings }: SettingsViewProps) {
   const [fullName, setFullName] = useState(profile.full_name);
   const [preferredLang, setPreferredLang] = useState<"fr" | "ar">(profile.preferred_language || "fr");
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+
+  // Password change state
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrentPwd, setShowCurrentPwd] = useState(false);
+  const [showNewPwd, setShowNewPwd] = useState(false);
+  const [showConfirmPwd, setShowConfirmPwd] = useState(false);
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
 
   // Org Settings Form state (if admin)
   const [orgName, setOrgName] = useState(orgSettings?.org_name || "TaskFlow Organization");
@@ -64,6 +77,41 @@ export function SettingsView({ profile, orgSettings }: SettingsViewProps) {
       toast.error(tCommon("error"));
     } finally {
       setIsSavingProfile(false);
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (newPassword.length < 6) {
+      toast.error(t("passwordTooShort"));
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error(t("passwordMismatch"));
+      return;
+    }
+
+    setIsSavingPassword(true);
+    try {
+      const res = await changePasswordAction({
+        currentPassword: currentPassword.trim() || undefined,
+        newPassword: newPassword.trim(),
+      });
+
+      if (!res.success) {
+        toast.error(res.error || tCommon("error"));
+        return;
+      }
+
+      toast.success(t("passwordChangedSuccess"));
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch {
+      toast.error(tCommon("error"));
+    } finally {
+      setIsSavingPassword(false);
     }
   };
 
@@ -112,11 +160,11 @@ export function SettingsView({ profile, orgSettings }: SettingsViewProps) {
             <div className="flex items-center gap-2 text-primary">
               <User className="h-5 w-5" />
               <CardTitle className="text-base font-semibold">
-                Profil utilisateur
+                {t("profileTitle")}
               </CardTitle>
             </div>
             <CardDescription className="text-xs">
-              Mettez à jour votre nom d&apos;affichage et votre langue d&apos;interface.
+              {t("profileSubtitle")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -171,6 +219,127 @@ export function SettingsView({ profile, orgSettings }: SettingsViewProps) {
             >
               <Save className="h-3.5 w-3.5" />
               <span>{isSavingProfile ? tCommon("loading") : tCommon("save")}</span>
+            </Button>
+          </CardFooter>
+        </form>
+      </Card>
+
+      {/* Password Change Card — available to all users */}
+      <Card>
+        <form onSubmit={handleChangePassword}>
+          <CardHeader>
+            <div className="flex items-center gap-2 text-primary">
+              <KeyRound className="h-5 w-5" />
+              <CardTitle className="text-base font-semibold">
+                {t("securityTitle")}
+              </CardTitle>
+            </div>
+            <CardDescription className="text-xs">
+              {t("securitySubtitle")}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Current Password */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                {t("currentPassword")}
+              </label>
+              <div className="relative">
+                <Input
+                  type={showCurrentPwd ? "text" : "password"}
+                  dir="ltr"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  placeholder="••••••••"
+                  disabled={isSavingPassword}
+                  className="ltr-only text-sm pe-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPwd((v) => !v)}
+                  className="absolute inset-y-0 end-3 flex items-center text-muted-foreground hover:text-foreground transition-colors"
+                  tabIndex={-1}
+                >
+                  {showCurrentPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* New Password */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-foreground">
+                  {t("newPassword")}
+                </label>
+                <div className="relative">
+                  <Input
+                    type={showNewPwd ? "text" : "password"}
+                    dir="ltr"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    minLength={6}
+                    disabled={isSavingPassword}
+                    className="ltr-only text-sm pe-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPwd((v) => !v)}
+                    className="absolute inset-y-0 end-3 flex items-center text-muted-foreground hover:text-foreground transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showNewPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Confirm New Password */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-foreground">
+                  {t("confirmPassword")}
+                </label>
+                <div className="relative">
+                  <Input
+                    type={showConfirmPwd ? "text" : "password"}
+                    dir="ltr"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    minLength={6}
+                    disabled={isSavingPassword}
+                    className={`ltr-only text-sm pe-10 ${
+                      confirmPassword && newPassword !== confirmPassword
+                        ? "border-destructive focus-visible:ring-destructive"
+                        : ""
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPwd((v) => !v)}
+                    className="absolute inset-y-0 end-3 flex items-center text-muted-foreground hover:text-foreground transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showConfirmPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                {confirmPassword && newPassword !== confirmPassword && (
+                  <p className="text-[10px] text-destructive font-medium">{t("passwordMismatch")}</p>
+                )}
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter className="border-t pt-4">
+            <Button
+              type="submit"
+              size="sm"
+              disabled={isSavingPassword || !newPassword || newPassword !== confirmPassword}
+              className="gap-1.5 text-xs ms-auto"
+            >
+              <KeyRound className="h-3.5 w-3.5" />
+              <span>{isSavingPassword ? tCommon("loading") : t("changePassword")}</span>
             </Button>
           </CardFooter>
         </form>

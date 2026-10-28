@@ -35,13 +35,18 @@ export async function getCurrentUser(): Promise<{ user: any; profile: Profile | 
     };
   }
 
+  // Deactivated accounts are blocked from accessing the system
+  if (!profile.is_active) {
+    return null;
+  }
+
   return { user, profile };
 }
 
 export async function requireAuth(allowedRoles?: ("admin" | "student")[]) {
   const authData = await getCurrentUser();
 
-  if (!authData || !authData.profile) {
+  if (!authData || !authData.profile || !authData.profile.is_active) {
     return null;
   }
 

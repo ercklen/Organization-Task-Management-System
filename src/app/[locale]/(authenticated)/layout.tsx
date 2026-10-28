@@ -14,8 +14,8 @@ export default async function AuthenticatedLayout({
   const { locale } = await params;
   const authData = await getCurrentUser();
 
-  if (!authData || !authData.profile) {
-    redirect(`/${locale}/login`);
+  if (!authData || !authData.profile || !authData.profile.is_active) {
+    redirect(`/${locale}/login?deactivated=true`);
   }
 
   return (
