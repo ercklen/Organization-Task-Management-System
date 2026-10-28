@@ -109,7 +109,7 @@ export function GroupDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-xl max-h-[90vh] overflow-y-auto rounded-xl">
         <DialogHeader className="gap-1">
           <div className="flex items-center gap-2 text-primary">
             <Users2 className="h-5 w-5" />

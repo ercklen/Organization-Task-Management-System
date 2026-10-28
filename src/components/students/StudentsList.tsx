@@ -151,14 +151,15 @@ export function StudentsList({
           </div>
         </Card>
       ) : (
-        <Card>
+        <Card className="overflow-hidden">
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>{t("fields.fullName")}</TableHead>
-                <TableHead>{t("fields.assignedGroups")}</TableHead>
-                <TableHead>{t("fields.preferredLanguage")}</TableHead>
-                <TableHead>Tâches terminées</TableHead>
+                <TableHead className="hidden sm:table-cell">{t("fields.assignedGroups")}</TableHead>
+                <TableHead className="hidden md:table-cell">{t("fields.preferredLanguage")}</TableHead>
+                <TableHead className="hidden md:table-cell">Tâches terminées</TableHead>
                 <TableHead>{t("fields.status")}</TableHead>
                 <TableHead className="text-end">{tCommon("actions")}</TableHead>
               </TableRow>
@@ -176,7 +177,7 @@ export function StudentsList({
                   <TableRow key={student.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <Avatar className="h-8 w-8 text-xs font-semibold">
+                        <Avatar className="h-8 w-8 text-xs font-semibold shrink-0">
                           <AvatarFallback>{initials}</AvatarFallback>
                         </Avatar>
                         <div>
@@ -190,8 +191,8 @@ export function StudentsList({
                       </div>
                     </TableCell>
 
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1 max-w-[240px]">
+                    <TableCell className="hidden sm:table-cell">
+                      <div className="flex flex-wrap gap-1 max-w-[200px]">
                         {student.group_names && student.group_names.length > 0 ? (
                           student.group_names.map((gn, i) => (
                             <Badge
@@ -210,11 +211,11 @@ export function StudentsList({
                       </div>
                     </TableCell>
 
-                    <TableCell className="text-xs uppercase font-mono">
+                    <TableCell className="text-xs uppercase font-mono hidden md:table-cell">
                       {student.preferred_language === "ar" ? "🇲🇦 AR" : "🇫🇷 FR"}
                     </TableCell>
 
-                    <TableCell className="text-xs">
+                    <TableCell className="text-xs hidden md:table-cell">
                       <div className="flex items-center gap-2">
                         <div className="h-1.5 w-16 rounded-full bg-muted overflow-hidden">
                           <div
@@ -243,21 +244,21 @@ export function StudentsList({
                         size="sm"
                         onClick={() => handleToggleStatus(student.id, student.is_active)}
                         disabled={isToggling === student.id}
-                        className={`text-xs h-8 gap-1 ${
+                        className={`text-xs h-9 gap-1 ${
                           student.is_active
                             ? "text-destructive hover:bg-destructive/10"
-                            : "text-emerald-600 hover:bg-emerald-50"
+                            : "text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
                         }`}
                       >
                         {student.is_active ? (
                           <>
                             <UserX className="h-3.5 w-3.5" />
-                            <span>{t("deactivateStudent")}</span>
+                            <span className="hidden sm:inline">{t("deactivateStudent")}</span>
                           </>
                         ) : (
                           <>
                             <UserCheck className="h-3.5 w-3.5" />
-                            <span>{t("activateStudent")}</span>
+                            <span className="hidden sm:inline">{t("activateStudent")}</span>
                           </>
                         )}
                       </Button>
@@ -267,6 +268,7 @@ export function StudentsList({
               })}
             </TableBody>
           </Table>
+          </div>
         </Card>
       )}
 

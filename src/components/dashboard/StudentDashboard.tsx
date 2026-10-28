@@ -53,17 +53,17 @@ export function StudentDashboard({
   return (
     <div className="space-y-6">
       {/* Welcome Banner */}
-      <div className="rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-6 border border-primary/20">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+      <div className="rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-4 sm:p-6 border border-primary/20">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
           {t("welcome")} {studentName} !
         </h1>
-        <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
+        <p className="text-xs sm:text-sm text-muted-foreground mt-1 max-w-2xl">
           {t("studentSubtitle")}
         </p>
       </div>
 
       {/* 6 Metric Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <StatsCard
           title={t("stats.myTotalTasks")}
           value={stats.totalAssigned}
@@ -134,11 +134,11 @@ export function StudentDashboard({
 
                 return (
                   <Card key={task.id} className="hover:border-primary/40 transition-colors">
-                    <CardContent className="p-5">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <CardContent className="p-4 sm:p-5">
+                      <div className="flex flex-col gap-3">
                         <div className="space-y-1.5 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="font-semibold text-base text-foreground">
+                            <span className="font-semibold text-sm sm:text-base text-foreground">
                               {task.title}
                             </span>
                             <Badge
@@ -166,7 +166,7 @@ export function StudentDashboard({
                             </p>
                           )}
 
-                          <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground pt-1">
+                          <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground pt-1">
                             <span>
                               {tTasks("fields.deadline")}:{" "}
                               <strong className="text-foreground">
@@ -181,10 +181,10 @@ export function StudentDashboard({
                           </div>
                         </div>
 
-                        {/* Action buttons */}
-                        <div className="shrink-0 flex items-center gap-2">
+                        {/* Action buttons — full width on mobile */}
+                        <div className="flex items-center justify-end gap-2">
                           {status === "completed" ? (
-                            <Badge variant="success" className="gap-1 py-1 px-3">
+                            <Badge variant="success" className="gap-1 py-1.5 px-3 text-xs">
                               <CheckCircle2 className="h-3.5 w-3.5" />
                               <span>{tTasks("statuses.completed")}</span>
                             </Badge>
@@ -195,7 +195,7 @@ export function StudentDashboard({
                               onClick={() =>
                                 setSelectedTask({ id: task.id, title: task.title })
                               }
-                              className="gap-1.5 shadow-sm text-xs"
+                              className="gap-1.5 shadow-sm text-xs w-full sm:w-auto min-h-[44px] sm:min-h-0"
                             >
                               <CheckCircle2 className="h-4 w-4" />
                               <span>{tTasks("markCompleted")}</span>

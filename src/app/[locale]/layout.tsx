@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { routing } from "@/i18n/routing";
+import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
 import "../globals.css";
 
@@ -53,10 +54,17 @@ export default async function LocaleLayout({
           locale === "ar" ? "font-arabic" : ""
         }`}
       >
-        <NextIntlClientProvider messages={messages} locale={locale}>
-          {children}
-          <Toaster richColors position={locale === "ar" ? "bottom-left" : "bottom-right"} />
-        </NextIntlClientProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <NextIntlClientProvider messages={messages} locale={locale}>
+            {children}
+            <Toaster richColors position={locale === "ar" ? "bottom-left" : "bottom-right"} />
+          </NextIntlClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

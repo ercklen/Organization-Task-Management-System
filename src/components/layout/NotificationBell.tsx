@@ -154,7 +154,7 @@ export function NotificationBell({
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80 sm:w-96 p-0 shadow-lg">
+      <DropdownMenuContent align="end" className="w-[min(96vw,24rem)] p-0 shadow-lg">
         <div className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center gap-2">
             <span className="font-semibold text-sm">{t("title")}</span>

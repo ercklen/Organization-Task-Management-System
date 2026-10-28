@@ -57,15 +57,15 @@ export function AdminDashboard({
       {/* Top greeting and quick action buttons */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
             {t("adminTitle")}
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             {t("adminSubtitle")}
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           <Button asChild size="sm" className="gap-1.5 shadow-sm">
             <Link href="/tasks?create=true">
               <Plus className="h-4 w-4" />
@@ -88,7 +88,7 @@ export function AdminDashboard({
       </div>
 
       {/* 8 Metric Cards Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         <StatsCard
           title={t("stats.totalStudents")}
           value={stats.totalStudents}

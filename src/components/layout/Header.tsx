@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Profile } from "@/types";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { NotificationBell } from "./NotificationBell";
 import { UserNav } from "./UserNav";
 import { Sidebar } from "./Sidebar";
@@ -37,10 +38,11 @@ export function Header({ profile }: HeaderProps) {
         </div>
 
         {/* Right action controls */}
-        <div className="flex items-center gap-2 md:gap-4">
+        <div className="flex items-center gap-1.5 sm:gap-3">
+          <ThemeToggle />
           <LanguageSwitcher />
           <NotificationBell userId={profile.id} />
-          <div className="h-6 w-px bg-border mx-1" />
+          <div className="h-5 w-px bg-border mx-0.5 sm:mx-1" />
           <UserNav profile={profile} />
         </div>
       </header>

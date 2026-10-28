@@ -460,6 +460,11 @@ CREATE POLICY "Students can view their own task completions"
   TO authenticated
   USING (student_id = auth.uid());
 
+CREATE POLICY "Students can insert their own task completions"
+  ON public.task_completions FOR INSERT
+  TO authenticated
+  WITH CHECK (student_id = auth.uid());
+
 CREATE POLICY "Students can update their own task completions"
   ON public.task_completions FOR UPDATE
   TO authenticated

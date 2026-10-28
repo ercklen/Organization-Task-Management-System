@@ -138,8 +138,8 @@ export function TasksList({
 
       {/* Filter and Search Toolbar */}
       <Card>
-        <CardContent className="p-4 space-y-3">
-          <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3">
+        <CardContent className="p-3 sm:p-4 space-y-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             {/* Search Input */}
             <div className="relative flex-1">
               <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -152,7 +152,7 @@ export function TasksList({
             </div>
 
             {/* View Mode Toggle */}
-            <div className="flex items-center border rounded-lg p-1 shrink-0 self-end md:self-auto bg-muted/40">
+            <div className="flex items-center border rounded-lg p-1 shrink-0 self-end sm:self-auto bg-muted/40">
               <Button
                 variant={viewMode === "grid" ? "default" : "ghost"}
                 size="sm"
@@ -244,7 +244,7 @@ export function TasksList({
         </Card>
       ) : viewMode === "grid" ? (
         /* Grid / Cards View */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredTasks.map((task) => {
             const completions = task.completions || [];
             const total = completions.length;
@@ -368,8 +368,9 @@ export function TasksList({
           })}
         </div>
       ) : (
-        /* Table View */
-        <Card>
+        /* Table View — horizontal scroll on mobile */
+        <Card className="overflow-hidden">
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -454,6 +455,7 @@ export function TasksList({
               })}
             </TableBody>
           </Table>
+          </div>
         </Card>
       )}
 

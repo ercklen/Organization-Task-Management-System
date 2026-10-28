@@ -27,8 +27,8 @@ export default async function AuthenticatedLayout({
       {/* Main Column */}
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header profile={authData.profile} />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-muted/20">
-          <div className="max-w-7xl mx-auto space-y-6">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-muted/20 pb-8">
+          <div className="max-w-7xl mx-auto space-y-6 w-full">
             {children}
           </div>
         </main>

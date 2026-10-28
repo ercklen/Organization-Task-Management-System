@@ -82,7 +82,7 @@ export function CreateGroupDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-md max-h-[90vh] overflow-y-auto rounded-xl">
         <form onSubmit={handleSubmit}>
           <DialogHeader className="gap-1">
             <div className="flex items-center gap-2 text-primary">

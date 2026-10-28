@@ -29,13 +29,13 @@ export function StatsCard({
 
   return (
     <Card className="hover:shadow-md transition-shadow">
-      <CardContent className="p-5 flex items-center justify-between">
-        <div className="space-y-1">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+      <CardContent className="p-3 sm:p-5 flex items-center justify-between gap-2">
+        <div className="space-y-0.5 sm:space-y-1 min-w-0">
+          <p className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider leading-tight line-clamp-2">
             {title}
           </p>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold tracking-tight text-foreground">
+          <div className="flex items-baseline gap-1 sm:gap-2">
+            <span className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
               {value}
             </span>
             {trend && (
@@ -50,11 +50,11 @@ export function StatsCard({
         </div>
         <div
           className={cn(
-            "h-12 w-12 rounded-xl flex items-center justify-center border shrink-0",
+            "h-9 w-9 sm:h-12 sm:w-12 rounded-xl flex items-center justify-center border shrink-0",
             colorStyles[color]
           )}
         >
-          <Icon className="h-6 w-6" />
+          <Icon className="h-4 w-4 sm:h-6 sm:w-6" />
         </div>
       </CardContent>
     </Card>

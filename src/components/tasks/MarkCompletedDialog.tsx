@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
-import { createClient } from "@/lib/supabase/client";
+import { completeTaskAction } from "@/actions/tasks";
 import {
   Dialog,
   DialogContent,
@@ -38,7 +38,6 @@ export function MarkCompletedDialog({
   const t = useTranslations("tasks.modal");
   const tCommon = useTranslations("common");
   const router = useRouter();
-  const supabase = createClient();
 
   const [note, setNote] = useState("");
   const [evidenceUrl, setEvidenceUrl] = useState("");
@@ -49,23 +48,15 @@ export function MarkCompletedDialog({
     setIsSubmitting(true);
 
     try {
-      // 1. Update task_completions record
-      const { error } = await supabase
-        .from("task_completions")
-        .upsert(
-          {
-            task_id: taskId,
-            student_id: studentId,
-            status: "completed",
-            completion_note: note.trim() || null,
-            evidence_url: evidenceUrl.trim() || null,
-            completed_at: new Date().toISOString(),
-          },
-          { onConflict: "task_id,student_id" }
-        );
+      const res = await completeTaskAction({
+        taskId,
+        studentId,
+        note,
+        evidenceUrl,
+      });
 
-      if (error) {
-        toast.error(error.message || tCommon("error"));
+      if (!res.success) {
+        toast.error(res.error || tCommon("error"));
         setIsSubmitting(false);
         return;
       }
@@ -85,7 +76,7 @@ export function MarkCompletedDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="w-[95vw] max-w-md rounded-xl">
         <form onSubmit={handleSubmit}>
           <DialogHeader className="gap-1">
             <div className="flex items-center gap-2 text-emerald-600">

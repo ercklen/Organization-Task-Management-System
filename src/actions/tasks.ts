@@ -118,6 +118,94 @@ export async function createTaskAction(input: CreateTaskInput) {
   return { success: true, taskId: task.id };
 }
 
+export async function completeTaskAction(input: {
+  taskId: string;
+  studentId: string;
+  note?: string;
+  evidenceUrl?: string;
+}) {
+  const authData = await getCurrentUser();
+  if (!authData || !authData.profile) {
+    return { success: false, error: "Non connecté" };
+  }
+
+  // Security check: Only the student themselves or an admin can mark it complete
+  if (authData.profile.role !== "admin" && authData.profile.id !== input.studentId) {
+    return { success: false, error: "Non autorisé à modifier la tâche d'un autre étudiant" };
+  }
+
+  const supabase = await createClient();
+
+  // Upsert completion record
+  const { error } = await supabase
+    .from("task_completions")
+    .upsert(
+      {
+        task_id: input.taskId,
+        student_id: input.studentId,
+        status: "completed",
+        completion_note: input.note?.trim() || null,
+        evidence_url: input.evidenceUrl?.trim() || null,
+        completed_at: new Date().toISOString(),
+      },
+      { onConflict: "task_id,student_id" }
+    );
+
+  if (error) {
+    console.error("completeTaskAction error:", error);
+    return { success: false, error: error.message };
+  }
+
+  // Fetch task title for notification message
+  const { data: taskData } = await supabase
+    .from("tasks")
+    .select("title")
+    .eq("id", input.taskId)
+    .single();
+
+  const taskTitle = taskData?.title || "Tâche";
+  const studentName = authData.profile.full_name || "Un étudiant";
+
+  // Notify all admins of the completion
+  const { data: adminProfiles } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("role", "admin");
+
+  if (adminProfiles && adminProfiles.length > 0) {
+    const notifRows = adminProfiles.map((admin) => ({
+      recipient_id: admin.id,
+      actor_id: input.studentId,
+      task_id: input.taskId,
+      notification_type: "task_completed",
+      message_key: "notifications.taskCompleted",
+      message_data: {
+        student_name: studentName,
+        task_title: taskTitle,
+      },
+    }));
+    await supabase.from("notifications").insert(notifRows);
+  }
+
+  // Record activity log
+  await supabase.from("activity_logs").insert({
+    actor_id: input.studentId,
+    action: "task_completed",
+    entity_type: "task",
+    entity_id: input.taskId,
+    metadata: {
+      task_title: taskTitle,
+      student_name: studentName,
+      completion_note: input.note?.trim() || null,
+    },
+  });
+
+  revalidatePath("/[locale]/tasks", "page");
+  revalidatePath("/[locale]/dashboard", "page");
+
+  return { success: true };
+}
+
 export async function reopenTaskAction(taskId: string, studentId: string) {
   const authData = await getCurrentUser();
   if (!authData || authData.profile?.role !== "admin") {
