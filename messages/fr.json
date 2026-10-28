@@ -1,0 +1,274 @@
+{
+  "common": {
+    "appName": "TaskFlow",
+    "organization": "Organisation",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "create": "Créer",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "archive": "Archiver",
+    "actions": "Actions",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "export": "Exporter CSV",
+    "refresh": "Actualiser",
+    "back": "Retour",
+    "status": "Statut",
+    "priority": "Priorité",
+    "deadline": "Date limite",
+    "optional": "Optionnel",
+    "loading": "Chargement...",
+    "success": "Succès",
+    "error": "Une erreur est survenue",
+    "confirm": "Confirmer",
+    "close": "Fermer",
+    "viewDetails": "Voir les détails",
+    "yes": "Oui",
+    "no": "Non",
+    "all": "Tous",
+    "unknown": "Inconnu",
+    "overview": "Vue d'ensemble",
+    "viewAll": "Voir tout",
+    "role": "Rôle"
+  },
+  "auth": {
+    "title": "Connexion à votre espace",
+    "subtitle": "Système de Gestion des Tâches de l'Organisation",
+    "email": "Adresse e-mail",
+    "emailPlaceholder": "nom@exemple.com",
+    "password": "Mot de passe",
+    "passwordPlaceholder": "••••••••",
+    "login": "Se connecter",
+    "loggingIn": "Connexion en cours...",
+    "forgotPassword": "Mot de passe oublié ?",
+    "logout": "Déconnexion",
+    "errorInvalidCredentials": "Identifiants invalides. Veuillez vérifier votre e-mail et mot de passe.",
+    "errorGeneral": "Impossible de se connecter. Veuillez réessayer.",
+    "demoCredentialsTitle": "Comptes de démonstration :",
+    "demoAdmin": "Admin : admin@taskflow.org / AdminPassword123!",
+    "demoStudent": "Étudiant : ahmed@taskflow.org / StudentPassword123!",
+    "roleAdmin": "Administrateur",
+    "roleStudent": "Étudiant"
+  },
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "tasks": "Tâches",
+    "groups": "Groupes",
+    "students": "Étudiants",
+    "notifications": "Notifications",
+    "activityLog": "Journal d'activité",
+    "reports": "Rapports",
+    "settings": "Paramètres",
+    "logout": "Déconnexion",
+    "switchLanguage": "Changer de langue",
+    "french": "Français",
+    "arabic": "العربية"
+  },
+  "dashboard": {
+    "adminTitle": "Tableau de bord d'administration",
+    "adminSubtitle": "Supervisez les groupes, les étudiants et l'avancement des tâches en temps réel.",
+    "studentTitle": "Mon espace de travail",
+    "studentSubtitle": "Consultez vos tâches assignées et suivez votre progression personnelle.",
+    "welcome": "Bienvenue,",
+    "stats": {
+      "totalStudents": "Total des étudiants",
+      "activeGroups": "Groupes actifs",
+      "totalTasks": "Total des tâches",
+      "pendingTasks": "En attente",
+      "inProgressTasks": "En cours",
+      "completedAssignments": "Assignations terminées",
+      "overdueAssignments": "Assignations en retard",
+      "overallCompletionRate": "Taux d'achèvement global",
+      "myTotalTasks": "Mes tâches assignées",
+      "myPending": "Tâches en attente",
+      "myInProgress": "Tâches en cours",
+      "myCompleted": "Tâches terminées",
+      "myOverdue": "Tâches en retard",
+      "myCompletionRate": "Mon taux d'achèvement"
+    },
+    "charts": {
+      "groupPerformance": "Progression par groupe",
+      "completionByPriority": "Achèvement par priorité",
+      "statusDistribution": "Distribution des statuts",
+      "groupName": "Groupe",
+      "completionRate": "Taux d'achèvement (%)",
+      "count": "Nombre"
+    },
+    "sections": {
+      "recentCompletions": "Dernières tâches terminées",
+      "recentActivity": "Activité récente de l'organisation",
+      "tasksDueSoon": "Tâches à échéance proche",
+      "overdueAlert": "Attention : Tâches en retard nécessitant un suivi",
+      "quickActions": "Actions rapides",
+      "emptyCompletions": "Aucune tâche terminée récemment.",
+      "emptyDueSoon": "Aucune tâche proche de l'échéance."
+    },
+    "quickActions": {
+      "createTask": "Nouvelle tâche",
+      "createGroup": "Créer un groupe",
+      "addStudent": "Ajouter un étudiant"
+    }
+  },
+  "tasks": {
+    "title": "Gestion des Tâches",
+    "subtitle": "Assignez des tâches aux groupes ou étudiants et suivez l'achèvement individuel.",
+    "myTasksTitle": "Mes Tâches",
+    "myTasksSubtitle": "Gérez et marquez l'avancement de vos tâches personnelles et de groupe.",
+    "createTask": "Créer une tâche",
+    "editTask": "Modifier la tâche",
+    "deleteTask": "Supprimer la tâche",
+    "duplicateTask": "Dupliquer la tâche",
+    "reopenTask": "Rouvrir la tâche",
+    "reopenConfirm": "Êtes-vous sûr de vouloir rouvrir cette tâche pour cet étudiant ?",
+    "taskDetails": "Détails de la tâche",
+    "markCompleted": "Marquer comme terminé",
+    "markInProgress": "Marquer en cours",
+    "startTask": "Commencer",
+    "fields": {
+      "title": "Titre de la tâche",
+      "description": "Description détaillée",
+      "priority": "Priorité",
+      "deadline": "Date limite d'exécution",
+      "assignedGroups": "Groupes assignés",
+      "assignedStudents": "Étudiants individuels assignés",
+      "completionNote": "Note d'achèvement (optionnelle)",
+      "evidenceUrl": "Lien ou justificatif (optionnel)",
+      "assignedTo": "Assigné à"
+    },
+    "priorities": {
+      "low": "Faible",
+      "medium": "Moyenne",
+      "high": "Élevée",
+      "urgent": "Urgente"
+    },
+    "statuses": {
+      "pending": "En attente",
+      "in_progress": "En cours",
+      "completed": "Terminé",
+      "overdue": "En retard"
+    },
+    "filters": {
+      "allPriorities": "Toutes les priorités",
+      "allStatuses": "Tous les statuts",
+      "allGroups": "Tous les groupes",
+      "searchPlaceholder": "Rechercher par titre ou description...",
+      "sortBy": "Trier par",
+      "sortDeadlineAsc": "Date limite (croissante)",
+      "sortDeadlineDesc": "Date limite (décroissante)",
+      "sortCreatedDesc": "Création (plus récentes)",
+      "sortPriority": "Priorité"
+    },
+    "progress": {
+      "ratio": "{completed} sur {total} terminés",
+      "percentage": "{percent}% achevé",
+      "studentsProgress": "Progression individuelle des étudiants :",
+      "noAssignedStudents": "Aucun étudiant n'est encore assigné à cette tâche."
+    },
+    "modal": {
+      "markCompleteTitle": "Confirmer l'achèvement de la tâche",
+      "markCompleteDesc": "Vous êtes sur le point de valider cette tâche. Vous pouvez ajouter une note d'explication ou un lien pour l'administrateur.",
+      "noteLabel": "Remarque ou commentaire",
+      "notePlaceholder": "Ex: Le matériel a été vérifié et rangé dans la salle 204.",
+      "evidenceLabel": "Lien justificatif ou document (Google Drive, Dropbox...)",
+      "evidencePlaceholder": "https://...",
+      "submitting": "Validation en cours...",
+      "successMessage": "Tâche validée avec succès ! L'administrateur a été notifié."
+    },
+    "empty": {
+      "title": "Aucune tâche trouvée",
+      "description": "Aucune tâche ne correspond à vos critères de recherche ou de filtre."
+    }
+  },
+  "groups": {
+    "title": "Gestion des Groupes",
+    "subtitle": "Organisez les étudiants par pôles de travail (Logistique, Communication, etc.)",
+    "createGroup": "Créer un groupe",
+    "editGroup": "Modifier le groupe",
+    "archiveGroup": "Archiver le groupe",
+    "groupDetails": "Détails du groupe",
+    "membersCount": "{count} membre(s)",
+    "activeTasksCount": "{count} tâche(s) active(s)",
+    "leader": "Responsable du groupe",
+    "noLeader": "Aucun responsable désigné",
+    "fields": {
+      "name": "Nom du groupe",
+      "description": "Description",
+      "leaderId": "Sélectionner un responsable",
+      "members": "Membres du groupe"
+    },
+    "members": {
+      "title": "Membres de l'équipe",
+      "addMember": "Ajouter un membre",
+      "removeMember": "Retirer",
+      "confirmRemove": "Retirer cet étudiant du groupe ? Ses données de tâches passées seront conservées.",
+      "selectStudent": "Sélectionner un étudiant",
+      "noMembers": "Ce groupe ne compte encore aucun étudiant."
+    },
+    "empty": {
+      "title": "Aucun groupe trouvé",
+      "description": "Créez votre premier pôle de travail pour commencer à organiser les tâches."
+    }
+  },
+  "students": {
+    "title": "Gestion des Étudiants",
+    "subtitle": "Gérez les comptes des étudiants, leurs affectations aux groupes et leur statut.",
+    "addStudent": "Ajouter un étudiant",
+    "editStudent": "Modifier l'étudiant",
+    "deactivateStudent": "Désactiver le compte",
+    "activateStudent": "Activer le compte",
+    "studentDetails": "Profil de l'étudiant",
+    "fields": {
+      "fullName": "Nom complet",
+      "email": "Adresse e-mail",
+      "password": "Mot de passe provisoire",
+      "assignedGroups": "Groupes d'appartenance",
+      "preferredLanguage": "Langue préférée",
+      "status": "Statut du compte",
+      "active": "Actif",
+      "inactive": "Inactif"
+    },
+    "empty": {
+      "title": "Aucun étudiant enregistré",
+      "description": "Ajoutez des étudiants à l'organisation pour leur assigner des tâches."
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "unreadCount": "{count} non lue(s)",
+    "markAllRead": "Tout marquer comme lu",
+    "markAsRead": "Marquer comme lu",
+    "noNotifications": "Aucune notification pour le moment.",
+    "viewAll": "Voir toutes les notifications",
+    "taskCompleted": "{student_name} a terminé la tâche « {task_title} ».",
+    "taskAssigned": "Une nouvelle tâche vous a été assignée : « {task_title} ».",
+    "taskReopened": "La tâche « {task_title} » a été rouverte par l'administrateur.",
+    "deadlineApproaching": "Rappel : La date limite pour « {task_title} » approche."
+  },
+  "activity": {
+    "title": "Journal d'Activité",
+    "subtitle": "Historique transparent des actions, créations de tâches et validations d'étudiants.",
+    "actor": "Utilisateur",
+    "action": "Action",
+    "target": "Élément concerné",
+    "date": "Date et heure",
+    "empty": "Aucune activité enregistrée."
+  },
+  "reports": {
+    "title": "Rapports & Analyses",
+    "subtitle": "Générez et exportez les rapports de performance de l'organisation au format CSV.",
+    "exportTasks": "Exporter les tâches (CSV)",
+    "exportStudents": "Exporter le suivi des étudiants (CSV)",
+    "exportGroups": "Exporter la performance des groupes (CSV)",
+    "description": "Les fichiers CSV incluent les dates, pourcentages d'achèvement, notes et historiques conformes aux normes d'audit."
+  },
+  "settings": {
+    "title": "Paramètres de l'Organisation",
+    "subtitle": "Configurez les informations générales, le fuseau horaire et les préférences par défaut.",
+    "orgName": "Nom de l'organisation",
+    "timezone": "Fuseau horaire",
+    "defaultLanguage": "Langue par défaut",
+    "allowEvidence": "Autoriser les étudiants à joindre un lien de justificatif",
+    "saved": "Paramètres enregistrés avec succès."
+  }
+}
