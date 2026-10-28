@@ -13,44 +13,51 @@ const GLOBAL_SYNC_CHANNEL = "global-org-sync";
 
 /**
  * Broadcast an instant sync event to all active clients on this organization.
- * Bypasses database replication latency so updates appear in < 50ms.
+ * Cleanly opens, sends, and immediately closes the channel to prevent server memory bloat.
  */
 export async function broadcastSync(event: string, data?: Record<string, any>) {
   try {
     const supabase = createClient();
-    const ch = supabase.channel(GLOBAL_SYNC_CHANNEL);
-    await ch.send({
-      type: "broadcast",
-      event: "sync",
-      payload: {
-        event,
-        data,
-        timestamp: Date.now(),
-      },
+    const ch = supabase.channel(`broadcast-${Date.now()}`);
+    await ch.subscribe(async (status) => {
+      if (status === "SUBSCRIBED") {
+        await ch.send({
+          type: "broadcast",
+          event: "sync",
+          payload: {
+            event,
+            data,
+            timestamp: Date.now(),
+          },
+        });
+        // Immediately clean up ephemeral channel
+        supabase.removeChannel(ch);
+      }
     });
   } catch (err) {
-    // Non-fatal — postgres_changes will still trigger synchronization
-    console.warn("broadcastSync error (handled):", err);
+    console.warn("[Realtime] broadcastSync error (handled):", err);
   }
 }
 
 /**
- * Invisible component mounted at the authenticated layout level.
- * Keeps an open Realtime subscription that automatically calls router.refresh()
- * whenever tasks, completions, groups or notifications change anywhere.
+ * Optimized Realtime sync component:
+ * - Subscribes only to core tables: tasks, task_completions, notifications
+ * - Batches rapid updates with an 800ms debounce
+ * - Releases channel subscriptions cleanly on unmount to minimize Supabase RAM usage
  */
 export function RealtimeSync({ currentUserId, userRole }: RealtimeSyncProps) {
   const router = useRouter();
-  const supabase = createClient();
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    // Debounce to batch rapid-fire events (e.g. bulk assignments)
+    const supabase = createClient();
+
+    // Debounce to batch rapid events and prevent excessive database re-fetching
     const triggerRefresh = () => {
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
       debounceTimer.current = setTimeout(() => {
         router.refresh();
-      }, 350);
+      }, 800);
     };
 
     const channel = supabase.channel(GLOBAL_SYNC_CHANNEL, {
@@ -59,25 +66,15 @@ export function RealtimeSync({ currentUserId, userRole }: RealtimeSyncProps) {
       },
     });
 
-    // 1. Instant Peer-to-Peer Broadcast
+    // 1. Peer-to-Peer Broadcast
     channel.on("broadcast", { event: "sync" }, () => {
       triggerRefresh();
     });
 
-    // 2. PostgreSQL CDC (Change Data Capture)
-    const tablesToWatch = [
-      "profiles",
-      "tasks",
-      "task_completions",
-      "task_group_assignments",
-      "task_individual_assignments",
-      "notifications",
-      "groups",
-      "group_members",
-      "activity_logs",
-    ];
+    // 2. PostgreSQL CDC - Only the 3 essential tables (minimizes PostgreSQL WAL / RAM overhead)
+    const essentialTables = ["tasks", "task_completions", "notifications"];
 
-    tablesToWatch.forEach((table) => {
+    essentialTables.forEach((table) => {
       channel.on(
         "postgres_changes" as any,
         {
@@ -107,18 +104,13 @@ export function RealtimeSync({ currentUserId, userRole }: RealtimeSyncProps) {
       );
     });
 
-    // 3. Subscribe with reconnect handling
-    channel.subscribe((status) => {
-      if (status === "SUBSCRIBED") {
-        console.log("Realtime sync active");
-      }
-    });
+    channel.subscribe();
 
     return () => {
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
       supabase.removeChannel(channel);
     };
-  }, [router, supabase, currentUserId, userRole]);
+  }, [router, currentUserId, userRole]);
 
   return null;
 }
