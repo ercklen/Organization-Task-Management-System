@@ -2,10 +2,14 @@
 
 import { useState, useMemo } from "react";
 import { useTranslations, useLocale } from "next-intl";
+import { useRouter } from "@/i18n/routing";
 import { TaskWithDetails, Group, Profile } from "@/types";
 import { CreateTaskDialog } from "./CreateTaskDialog";
+import { EditTaskDialog } from "./EditTaskDialog";
 import { TaskDetailDialog } from "./TaskDetailDialog";
 import { MarkCompletedDialog } from "./MarkCompletedDialog";
+import { deleteTaskAction } from "@/actions/tasks";
+import { broadcastSync } from "@/components/realtime/RealtimeSync";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -29,8 +33,11 @@ import {
   List,
   Eye,
   Clock,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface TasksListProps {
   tasks: TaskWithDetails[];
@@ -52,10 +59,37 @@ export function TasksList({
   const t = useTranslations("tasks");
   const tCommon = useTranslations("common");
   const locale = useLocale();
+  const router = useRouter();
 
   const [createOpen, setCreateOpen] = useState(initialCreateOpen);
+  const [editingTask, setEditingTask] = useState<TaskWithDetails | null>(null);
+  const [isDeletingTaskId, setIsDeletingTaskId] = useState<string | null>(null);
   const [selectedTask, setSelectedTask] = useState<TaskWithDetails | null>(null);
   const [completeTaskId, setCompleteTaskId] = useState<{ id: string; title: string } | null>(null);
+
+  const handleDeleteTask = async (task: TaskWithDetails, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (!confirm(t("deleteTaskConfirm"))) return;
+
+    setIsDeletingTaskId(task.id);
+    try {
+      const res = await deleteTaskAction(task.id);
+      if (!res.success) {
+        toast.error(res.error || tCommon("error"));
+        return;
+      }
+      toast.success(tCommon("success"));
+      broadcastSync("task_deleted", { taskId: task.id });
+      if (selectedTask?.id === task.id) {
+        setSelectedTask(null);
+      }
+      router.refresh();
+    } catch {
+      toast.error(tCommon("error"));
+    } finally {
+      setIsDeletingTaskId(null);
+    }
+  };
 
   // Filters & Search states
   const [searchQuery, setSearchQuery] = useState("");
@@ -356,10 +390,40 @@ export function TasksList({
                     )}
 
                     {isAdmin && (
-                      <Button variant="ghost" size="sm" className="h-7 text-xs gap-1">
-                        <Eye className="h-3.5 w-3.5" />
-                        <span>{tCommon("viewDetails")}</span>
-                      </Button>
+                      <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 text-xs px-2 gap-1 text-primary hover:bg-primary/10"
+                          onClick={() => setEditingTask(task)}
+                          title={t("editTask")}
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                          <span className="hidden sm:inline">{tCommon("edit")}</span>
+                        </Button>
+
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 text-xs px-2 gap-1 text-destructive hover:bg-destructive/10"
+                          onClick={(e) => handleDeleteTask(task, e)}
+                          disabled={isDeletingTaskId === task.id}
+                          title={t("deleteTask")}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          <span className="hidden sm:inline">{tCommon("delete")}</span>
+                        </Button>
+
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 text-xs px-2 gap-1"
+                          onClick={() => setSelectedTask(task)}
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                          <span className="hidden sm:inline">{tCommon("viewDetails")}</span>
+                        </Button>
+                      </div>
                     )}
                   </div>
                 </CardContent>
@@ -440,15 +504,44 @@ export function TasksList({
                       </div>
                     </TableCell>
                     <TableCell className="text-end" onClick={(e) => e.stopPropagation()}>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSelectedTask(task)}
-                        className="h-8 text-xs gap-1"
-                      >
-                        <Eye className="h-3.5 w-3.5" />
-                        <span>{tCommon("viewDetails")}</span>
-                      </Button>
+                      <div className="flex items-center justify-end gap-1">
+                        {isAdmin && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setEditingTask(task)}
+                              className="h-8 text-xs px-2 gap-1 text-primary hover:bg-primary/10"
+                              title={t("editTask")}
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                              <span className="hidden md:inline">{tCommon("edit")}</span>
+                            </Button>
+
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => handleDeleteTask(task, e)}
+                              disabled={isDeletingTaskId === task.id}
+                              className="h-8 text-xs px-2 gap-1 text-destructive hover:bg-destructive/10"
+                              title={t("deleteTask")}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                              <span className="hidden md:inline">{tCommon("delete")}</span>
+                            </Button>
+                          </>
+                        )}
+
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedTask(task)}
+                          className="h-8 text-xs px-2 gap-1"
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                          <span className="hidden md:inline">{tCommon("viewDetails")}</span>
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
@@ -467,12 +560,29 @@ export function TasksList({
         onOpenChange={setCreateOpen}
       />
 
+      {/* Edit Task Dialog */}
+      <EditTaskDialog
+        task={editingTask}
+        groups={groups}
+        students={students}
+        open={!!editingTask}
+        onOpenChange={(open) => !open && setEditingTask(null)}
+      />
+
       {/* Task Details Dialog (Shows individual completions & admin reopen) */}
       <TaskDetailDialog
         task={selectedTask}
         isAdmin={isAdmin}
         open={!!selectedTask}
         onOpenChange={(open) => !open && setSelectedTask(null)}
+        onEdit={(taskToEdit) => {
+          setSelectedTask(null);
+          setEditingTask(taskToEdit);
+        }}
+        onDelete={(taskToDelete) => {
+          setSelectedTask(null);
+          handleDeleteTask(taskToDelete);
+        }}
       />
 
       {/* Mark As Completed Dialog for Student */}

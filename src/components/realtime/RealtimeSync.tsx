@@ -66,6 +66,7 @@ export function RealtimeSync({ currentUserId, userRole }: RealtimeSyncProps) {
 
     // 2. PostgreSQL CDC (Change Data Capture)
     const tablesToWatch = [
+      "profiles",
       "tasks",
       "task_completions",
       "task_group_assignments",

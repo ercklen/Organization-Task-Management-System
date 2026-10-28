@@ -256,3 +256,188 @@ export async function archiveTaskAction(taskId: string) {
 
   return { success: true };
 }
+
+export interface UpdateTaskInput {
+  id: string;
+  title: string;
+  description?: string;
+  priority: "low" | "medium" | "high" | "urgent";
+  due_date: string;
+  assigned_group_ids: string[];
+  assigned_student_ids: string[];
+}
+
+export async function updateTaskAction(input: UpdateTaskInput) {
+  const authData = await getCurrentUser();
+  if (!authData || authData.profile?.role !== "admin") {
+    return { success: false, error: "Non autorisé" };
+  }
+
+  const supabase = await createClient();
+
+  // 1. Update task fields
+  const { error: taskError } = await supabase
+    .from("tasks")
+    .update({
+      title: input.title,
+      description: input.description || null,
+      priority: input.priority,
+      due_date: input.due_date,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", input.id);
+
+  if (taskError) {
+    return { success: false, error: taskError.message };
+  }
+
+  // 2. Synchronize group assignments
+  await supabase.from("task_group_assignments").delete().eq("task_id", input.id);
+  if (input.assigned_group_ids.length > 0) {
+    const groupRows = input.assigned_group_ids.map((gid) => ({
+      task_id: input.id,
+      group_id: gid,
+    }));
+    await supabase.from("task_group_assignments").insert(groupRows);
+  }
+
+  // 3. Synchronize individual student assignments
+  await supabase.from("task_individual_assignments").delete().eq("task_id", input.id);
+  if (input.assigned_student_ids.length > 0) {
+    const studentRows = input.assigned_student_ids.map((sid) => ({
+      task_id: input.id,
+      student_id: sid,
+    }));
+    await supabase.from("task_individual_assignments").insert(studentRows);
+  }
+
+  // 4. Calculate all eligible unique students
+  const eligibleStudentIds = new Set<string>(input.assigned_student_ids);
+
+  if (input.assigned_group_ids.length > 0) {
+    const { data: groupMembers } = await supabase
+      .from("group_members")
+      .select("student_id")
+      .in("group_id", input.assigned_group_ids)
+      .is("left_at", null);
+
+    (groupMembers || []).forEach((gm) => {
+      eligibleStudentIds.add(gm.student_id);
+    });
+  }
+
+  const studentIdsArray = Array.from(eligibleStudentIds);
+
+  // 5. Update task_completions
+  const { data: existingCompletions } = await supabase
+    .from("task_completions")
+    .select("student_id, status")
+    .eq("task_id", input.id);
+
+  const existingMap = new Map((existingCompletions || []).map((c) => [c.student_id, c.status]));
+
+  // Add completions for newly assigned students
+  const newStudentIds = studentIdsArray.filter((sid) => !existingMap.has(sid));
+  if (newStudentIds.length > 0) {
+    const completionRows = newStudentIds.map((sid) => ({
+      task_id: input.id,
+      student_id: sid,
+      status: "pending",
+    }));
+
+    await supabase.from("task_completions").upsert(completionRows, {
+      onConflict: "task_id,student_id",
+      ignoreDuplicates: true,
+    });
+
+    // Notify newly assigned students
+    const notificationRows = newStudentIds.map((sid) => ({
+      recipient_id: sid,
+      actor_id: authData.profile!.id,
+      task_id: input.id,
+      notification_type: "task_assigned",
+      message_key: "notifications.taskAssigned",
+      message_data: { task_title: input.title },
+    }));
+
+    await supabase.from("notifications").insert(notificationRows);
+  }
+
+  // Remove pending completions for students who were removed from assignment
+  const unassignedPendingIds = Array.from(existingMap.keys()).filter(
+    (sid) => !eligibleStudentIds.has(sid) && existingMap.get(sid) === "pending"
+  );
+  if (unassignedPendingIds.length > 0) {
+    await supabase
+      .from("task_completions")
+      .delete()
+      .eq("task_id", input.id)
+      .in("student_id", unassignedPendingIds);
+  }
+
+  // 6. Activity Log
+  await supabase.from("activity_logs").insert({
+    actor_id: authData.profile.id,
+    action: "task_updated",
+    entity_type: "task",
+    entity_id: input.id,
+    metadata: {
+      task_title: input.title,
+      priority: input.priority,
+      assigned_groups_count: input.assigned_group_ids.length,
+      assigned_students_count: studentIdsArray.length,
+    },
+  });
+
+  revalidatePath("/[locale]/tasks", "page");
+  revalidatePath("/[locale]/dashboard", "page");
+
+  return { success: true };
+}
+
+export async function deleteTaskAction(taskId: string) {
+  const authData = await getCurrentUser();
+  if (!authData || authData.profile?.role !== "admin") {
+    return { success: false, error: "Non autorisé" };
+  }
+
+  const supabase = await createClient();
+
+  // Get task title for activity log
+  const { data: task } = await supabase
+    .from("tasks")
+    .select("title")
+    .eq("id", taskId)
+    .single();
+
+  // Clean related rows to ensure seamless deletion
+  await supabase.from("task_completions").delete().eq("task_id", taskId);
+  await supabase.from("task_group_assignments").delete().eq("task_id", taskId);
+  await supabase.from("task_individual_assignments").delete().eq("task_id", taskId);
+  await supabase.from("notifications").delete().eq("task_id", taskId);
+
+  const { error } = await supabase
+    .from("tasks")
+    .delete()
+    .eq("id", taskId);
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  // Insert Activity Log
+  await supabase.from("activity_logs").insert({
+    actor_id: authData.profile.id,
+    action: "task_deleted",
+    entity_type: "task",
+    entity_id: taskId,
+    metadata: {
+      task_title: task?.title || "Tâche supprimée",
+    },
+  });
+
+  revalidatePath("/[locale]/tasks", "page");
+  revalidatePath("/[locale]/dashboard", "page");
+
+  return { success: true };
+}

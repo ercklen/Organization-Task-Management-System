@@ -48,6 +48,9 @@ export default async function TasksPage({
       task_group_assignments(
         group:groups(id, name)
       ),
+      task_individual_assignments(
+        student:profiles(id, full_name, email)
+      ),
       task_completions(
         id,
         task_id,
@@ -65,10 +68,11 @@ export default async function TasksPage({
   // If not admin, RLS automatically restricts or we filter tasks
   const { data: rawTasks } = await tasksQuery;
 
-  // Format tasks with assigned groups
+  // Format tasks with assigned groups and students
   const tasks: TaskWithDetails[] = (rawTasks || []).map((t: any) => ({
     ...t,
-    assigned_groups: t.task_group_assignments?.map((tga: any) => tga.group) || [],
+    assigned_groups: t.task_group_assignments?.map((tga: any) => tga.group).filter(Boolean) || [],
+    assigned_students: t.task_individual_assignments?.map((tia: any) => tia.student).filter(Boolean) || [],
     completions: t.task_completions || [],
   }));
 

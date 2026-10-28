@@ -27,6 +27,8 @@ import {
   Calendar,
   AlertCircle,
   MessageSquare,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import { formatDate, formatDateTime } from "@/lib/utils";
 import { toast } from "sonner";
@@ -36,6 +38,8 @@ interface TaskDetailDialogProps {
   isAdmin: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onEdit?: (task: TaskWithDetails) => void;
+  onDelete?: (task: TaskWithDetails) => void;
 }
 
 export function TaskDetailDialog({
@@ -43,6 +47,8 @@ export function TaskDetailDialog({
   isAdmin,
   open,
   onOpenChange,
+  onEdit,
+  onDelete,
 }: TaskDetailDialogProps) {
   const t = useTranslations("tasks");
   const tCommon = useTranslations("common");
@@ -244,19 +250,44 @@ export function TaskDetailDialog({
           </div>
         </div>
 
-        <DialogFooter className="flex-row justify-between sm:justify-between pt-4 border-t gap-2">
+        <DialogFooter className="flex-col sm:flex-row justify-between pt-4 border-t gap-2">
           {isAdmin && (
-            <Button
-              type="button"
-              variant="destructive"
-              size="sm"
-              onClick={handleArchive}
-              disabled={isProcessing}
-              className="gap-1.5 text-xs"
-            >
-              <Archive className="h-3.5 w-3.5" />
-              <span>{tCommon("archive")}</span>
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onEdit?.(task)}
+                className="gap-1.5 text-xs text-primary border-primary/30 hover:bg-primary/10"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                <span>{tCommon("edit")}</span>
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleArchive}
+                disabled={isProcessing}
+                className="gap-1.5 text-xs text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/20"
+              >
+                <Archive className="h-3.5 w-3.5" />
+                <span>{tCommon("archive")}</span>
+              </Button>
+
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                onClick={() => onDelete?.(task)}
+                disabled={isProcessing}
+                className="gap-1.5 text-xs"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                <span>{tCommon("delete")}</span>
+              </Button>
+            </div>
           )}
 
           <Button
@@ -264,6 +295,7 @@ export function TaskDetailDialog({
             variant="outline"
             size="sm"
             onClick={() => onOpenChange(false)}
+            className="text-xs"
           >
             {tCommon("close")}
           </Button>

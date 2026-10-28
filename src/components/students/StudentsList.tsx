@@ -2,9 +2,12 @@
 
 import { useState, useMemo } from "react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/routing";
 import { Profile, Group } from "@/types";
 import { CreateStudentDialog } from "./CreateStudentDialog";
-import { toggleStudentStatusAction } from "@/actions/students";
+import { EditStudentDialog } from "./EditStudentDialog";
+import { toggleStudentStatusAction, deleteStudentAction } from "@/actions/students";
+import { broadcastSync } from "@/components/realtime/RealtimeSync";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,11 +30,14 @@ import {
   Shield,
   UserX,
   UserCheck,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 
 interface StudentWithStats extends Profile {
   group_names?: string[];
+  group_ids?: string[];
   total_assigned?: number;
   completed_count?: number;
 }
@@ -49,11 +55,14 @@ export function StudentsList({
 }: StudentsListProps) {
   const t = useTranslations("students");
   const tCommon = useTranslations("common");
+  const router = useRouter();
 
   const [createOpen, setCreateOpen] = useState(initialCreateOpen);
+  const [editingStudent, setEditingStudent] = useState<StudentWithStats | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedGroup, setSelectedGroup] = useState("all");
   const [isToggling, setIsToggling] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
   const filteredStudents = useMemo(() => {
     return students.filter((s) => {
@@ -83,10 +92,32 @@ export function StudentsList({
         return;
       }
       toast.success(tCommon("success"));
+      broadcastSync("student_updated", { studentId });
+      router.refresh();
     } catch {
       toast.error(tCommon("error"));
     } finally {
       setIsToggling(null);
+    }
+  };
+
+  const handleDeleteStudent = async (student: StudentWithStats) => {
+    if (!confirm(t("deleteStudentConfirm"))) return;
+
+    setIsDeleting(student.id);
+    try {
+      const res = await deleteStudentAction(student.id);
+      if (!res.success) {
+        toast.error(res.error || tCommon("error"));
+        return;
+      }
+      toast.success(tCommon("success"));
+      broadcastSync("student_deleted", { studentId: student.id });
+      router.refresh();
+    } catch {
+      toast.error(tCommon("error"));
+    } finally {
+      setIsDeleting(null);
     }
   };
 
@@ -239,29 +270,55 @@ export function StudentsList({
                     </TableCell>
 
                     <TableCell className="text-end">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleToggleStatus(student.id, student.is_active)}
-                        disabled={isToggling === student.id}
-                        className={`text-xs h-9 gap-1 ${
-                          student.is_active
-                            ? "text-destructive hover:bg-destructive/10"
-                            : "text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
-                        }`}
-                      >
-                        {student.is_active ? (
-                          <>
-                            <UserX className="h-3.5 w-3.5" />
-                            <span className="hidden sm:inline">{t("deactivateStudent")}</span>
-                          </>
-                        ) : (
-                          <>
-                            <UserCheck className="h-3.5 w-3.5" />
-                            <span className="hidden sm:inline">{t("activateStudent")}</span>
-                          </>
-                        )}
-                      </Button>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setEditingStudent(student)}
+                          className="text-xs h-8 px-2 gap-1 text-primary hover:bg-primary/10"
+                          title={t("editStudent")}
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                          <span className="hidden sm:inline">{tCommon("edit")}</span>
+                        </Button>
+
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleToggleStatus(student.id, student.is_active)}
+                          disabled={isToggling === student.id}
+                          className={`text-xs h-8 px-2 gap-1 ${
+                            student.is_active
+                              ? "text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+                              : "text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                          }`}
+                          title={student.is_active ? t("deactivateStudent") : t("activateStudent")}
+                        >
+                          {student.is_active ? (
+                            <>
+                              <UserX className="h-3.5 w-3.5" />
+                              <span className="hidden lg:inline">{t("deactivateStudent")}</span>
+                            </>
+                          ) : (
+                            <>
+                              <UserCheck className="h-3.5 w-3.5" />
+                              <span className="hidden lg:inline">{t("activateStudent")}</span>
+                            </>
+                          )}
+                        </Button>
+
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteStudent(student)}
+                          disabled={isDeleting === student.id}
+                          className="text-xs h-8 px-2 gap-1 text-destructive hover:bg-destructive/10"
+                          title={t("deleteStudent")}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          <span className="hidden sm:inline">{tCommon("delete")}</span>
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
@@ -277,6 +334,14 @@ export function StudentsList({
         groups={groups}
         open={createOpen}
         onOpenChange={setCreateOpen}
+      />
+
+      {/* Edit Student Dialog */}
+      <EditStudentDialog
+        student={editingStudent}
+        groups={groups}
+        open={!!editingStudent}
+        onOpenChange={(open) => !open && setEditingStudent(null)}
       />
     </div>
   );

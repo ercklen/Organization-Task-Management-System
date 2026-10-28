@@ -52,9 +52,11 @@ export default async function StudentsPage({
     .select("student_id, status");
 
   const studentsWithStats = (rawStudents || []).map((student) => {
-    const studentGroups = (memberships || [])
-      .filter((m) => m.student_id === student.id && m.group)
-      .map((m) => (m.group as any).name);
+    const studentMemberships = (memberships || []).filter(
+      (m) => m.student_id === student.id && m.group
+    );
+    const studentGroups = studentMemberships.map((m) => (m.group as any).name);
+    const studentGroupIds = studentMemberships.map((m) => (m.group as any).id);
 
     const studentCompletions = (completions || []).filter((c) => c.student_id === student.id);
     const total = studentCompletions.length;
@@ -63,6 +65,7 @@ export default async function StudentsPage({
     return {
       ...student,
       group_names: studentGroups,
+      group_ids: studentGroupIds,
       total_assigned: total,
       completed_count: completed,
     };
