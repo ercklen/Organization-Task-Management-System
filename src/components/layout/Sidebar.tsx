@@ -101,14 +101,6 @@ export function Sidebar({ profile, onNavigate, className }: SidebarProps) {
           );
         })}
       </nav>
-
-      {/* Organization footer label */}
-      <div className="p-4 border-t border-border shrink-0 text-center">
-        <div className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground text-start">
-          <p className="font-semibold text-foreground">TaskFlow Org</p>
-          <p className="text-[11px] truncate mt-0.5">Bilingual Task Management</p>
-        </div>
-      </div>
     </aside>
   );
 }
