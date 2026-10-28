@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "@/i18n/routing";
 import { reopenTaskAction, archiveTaskAction } from "@/actions/tasks";
+import { broadcastSync } from "@/components/realtime/RealtimeSync";
 import { TaskWithDetails, Profile } from "@/types";
 import {
   Dialog,
@@ -69,6 +70,7 @@ export function TaskDetailDialog({
         return;
       }
       toast.success(tCommon("success"));
+      broadcastSync("task_reopened", { taskId: task.id, studentId });
       router.refresh();
       onOpenChange(false);
     } catch {
@@ -89,6 +91,7 @@ export function TaskDetailDialog({
         return;
       }
       toast.success(tCommon("success"));
+      broadcastSync("task_archived", { taskId: task.id });
       router.refresh();
       onOpenChange(false);
     } catch {

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/get-user";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
+import { RealtimeSync } from "@/components/realtime/RealtimeSync";
 
 export default async function AuthenticatedLayout({
   children,
@@ -19,6 +20,12 @@ export default async function AuthenticatedLayout({
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
+      {/* Real-time synchronization across all pages for students & admins */}
+      <RealtimeSync
+        currentUserId={authData.profile.id}
+        userRole={authData.profile.role as "admin" | "student"}
+      />
+
       {/* Desktop Persistent Sidebar */}
       <div className="hidden md:flex shrink-0">
         <Sidebar profile={authData.profile} />

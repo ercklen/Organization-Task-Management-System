@@ -88,6 +88,9 @@ export function NotificationBell({
           toast.info(message, {
             description: formatDateTime(newNotif.created_at, locale),
           });
+
+          // Refresh current page so new task or completed status appears immediately
+          router.refresh();
         }
       )
       .on(

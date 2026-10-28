@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
 import { createTaskAction } from "@/actions/tasks";
+import { broadcastSync } from "@/components/realtime/RealtimeSync";
 import { Group, Profile } from "@/types";
 import {
   Dialog,
@@ -96,6 +97,7 @@ export function CreateTaskDialog({
       setDescription("");
       setSelectedGroupIds([]);
       setSelectedStudentIds([]);
+      broadcastSync("task_created", { taskId: res.taskId });
       router.refresh();
     } catch {
       toast.error(tCommon("error"));

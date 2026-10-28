@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
 import { completeTaskAction } from "@/actions/tasks";
+import { broadcastSync } from "@/components/realtime/RealtimeSync";
 import {
   Dialog,
   DialogContent,
@@ -65,6 +66,7 @@ export function MarkCompletedDialog({
       onOpenChange(false);
       setNote("");
       setEvidenceUrl("");
+      broadcastSync("task_completed", { taskId, studentId });
       router.refresh();
       if (onSuccess) onSuccess();
     } catch {

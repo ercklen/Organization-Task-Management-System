@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
 import { createGroupAction } from "@/actions/groups";
+import { broadcastSync } from "@/components/realtime/RealtimeSync";
 import { Profile } from "@/types";
 import {
   Dialog,
@@ -72,6 +73,7 @@ export function CreateGroupDialog({
       setDescription("");
       setLeaderId("");
       setSelectedMemberIds([]);
+      broadcastSync("group_created");
       router.refresh();
     } catch {
       toast.error(tCommon("error"));
