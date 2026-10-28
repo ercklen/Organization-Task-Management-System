@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth/get-user";
 import { revalidatePath } from "next/cache";
+import { sendTaskAssignmentEmails } from "@/lib/email/task-notifications";
 
 export interface CreateTaskInput {
   title: string;
@@ -96,6 +97,30 @@ export async function createTaskAction(input: CreateTaskInput) {
     }));
 
     await supabase.from("notifications").insert(notificationRows);
+
+    // 6b. Send email notification via Resend to each student's registered email
+    try {
+      const { data: recipientProfiles } = await supabase
+        .from("profiles")
+        .select("id, email, full_name, preferred_language, is_active")
+        .in("id", studentIdsArray)
+        .eq("is_active", true);
+
+      if (recipientProfiles && recipientProfiles.length > 0) {
+        await sendTaskAssignmentEmails({
+          students: recipientProfiles,
+          task: {
+            id: task.id,
+            title: task.title,
+            description: task.description,
+            priority: task.priority,
+            due_date: task.due_date,
+          },
+        });
+      }
+    } catch (emailErr) {
+      console.error("[Email Notification Error]", emailErr);
+    }
   }
 
   // 7. Insert Activity Log
@@ -361,6 +386,30 @@ export async function updateTaskAction(input: UpdateTaskInput) {
     }));
 
     await supabase.from("notifications").insert(notificationRows);
+
+    // 6b. Send email notification via Resend to newly assigned students
+    try {
+      const { data: recipientProfiles } = await supabase
+        .from("profiles")
+        .select("id, email, full_name, preferred_language, is_active")
+        .in("id", newStudentIds)
+        .eq("is_active", true);
+
+      if (recipientProfiles && recipientProfiles.length > 0) {
+        await sendTaskAssignmentEmails({
+          students: recipientProfiles,
+          task: {
+            id: input.id,
+            title: input.title,
+            description: input.description,
+            priority: input.priority,
+            due_date: input.due_date,
+          },
+        });
+      }
+    } catch (emailErr) {
+      console.error("[Email Notification Error]", emailErr);
+    }
   }
 
   // Remove pending completions for students who were removed from assignment
