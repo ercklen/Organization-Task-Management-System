@@ -264,11 +264,22 @@
   },
   "reports": {
     "title": "Rapports & Analyses",
-    "subtitle": "Générez et exportez les rapports de performance de l'organisation au format CSV.",
-    "exportTasks": "Exporter les tâches (CSV)",
-    "exportStudents": "Exporter le suivi des étudiants (CSV)",
-    "exportGroups": "Exporter la performance des groupes (CSV)",
-    "description": "Les fichiers CSV incluent les dates, pourcentages d'achèvement, notes et historiques conformes aux normes d'audit."
+    "subtitle": "Générez et exportez les rapports de performance de l'organisation au format XLSX (Excel) avec tableaux organisés.",
+    "exportTasks": "Exporter les tâches",
+    "exportStudents": "Exporter le suivi des étudiants",
+    "exportGroups": "Exporter la performance des groupes",
+    "description": "Les fichiers Excel incluent les dates, pourcentages d'achèvement, classements et détails complets.",
+    "exportXlsx": "Exporter au format XLSX (Excel)",
+    "downloadSuccess": "Fichier Excel téléchargé avec succès !",
+    "cardTasks": "Rapport des Tâches",
+    "cardTasksDesc": "Exportez les statuts, priorités et détails individuels par tâche sur plusieurs feuilles de calcul.",
+    "cardStudents": "Rapport des Étudiants",
+    "cardStudentsDesc": "Exportez le suivi des étudiants, taux d'achèvement et classement de performance.",
+    "cardGroups": "Rapport des Groupes",
+    "cardGroupsDesc": "Exportez la structure des groupes, responsables, membres et tâches assignées.",
+    "cardFull": "Rapport Global Complet",
+    "cardFullDesc": "Téléchargez un classeur tout-en-un réunissant le tableau de bord, tâches, étudiants et groupes.",
+    "xlsxNote": "Tous les rapports sont exportés au format natif Microsoft Excel (.xlsx) avec en-têtes stylisés et colonnes ajustées."
   },
   "settings": {
     "title": "Paramètres du Compte",
